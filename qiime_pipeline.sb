@@ -1,0 +1,94 @@
+#!/bin/sh -l
+
+#SBATCH --nodes=1                   ##number of requested nodes (a node is a group of CPUs)
+#SBATCH -n 20                    ##number of requested CPUs
+#SBATCH --time=2-00:00:00             ##time requested
+#SBATCH --job-name qiime ##name of job
+#SBATCH -A microbiome                 ##name of the queue you are using. Could be scholar or microbiome if you are on snyder
+
+#########################################################################
+
+echo "Start time"
+date +"%d %B %Y %H:%M:%S"
+
+#step 1, cd into the proper directory. This directory must already exist
+
+cd /scratch/bell/quinn112/final
+
+pwd
+
+#step 2, Load Modules
+
+echo "loading bioinfo"
+module load bioinfo
+
+echo "loading qiime2-2020.11"
+module load Qiime/2-2020.11
+
+#step 3, Run the code you want
+
+echo "initiating qiime2 moving pictures tutorial pipeline"
+
+#echo "Data Import"
+#Make the sequences into a qiime recognizable format
+
+#qiime tools import \
+#  --type 'SampleData[PairedEndSequencesWithQuality]' \
+#  --input-path manifest.tsv \
+#  --output-path demux.qza \
+#  --input-format PairedEndFastqManifestPhred33V2
+
+#qiime demux summarize \
+#  --i-data demux.qza \
+#  --o-visualization demux.qzv
+
+#qiime dada2 denoise-paired \
+#  --i-demultiplexed-seqs demux.qza \
+#  --p-trim-left-f 0 \
+#  --p-trim-left-r 0 \
+#  --p-trunc-len-f 280 \
+#  --p-trunc-len-r 180 \
+#  --o-table table.qza \
+#  --o-representative-sequences rep-seqs.qza \
+#  --o-denoising-stats denoising-stats.qza
+
+#qiime feature-table summarize \
+#  --i-table table.qza \
+#  --o-visualization table.qzv \
+#  --m-sample-metadata-file metadata.tsv
+
+#qiime feature-table tabulate-seqs \
+#  --i-data rep-seqs.qza \
+#  --o-visualization rep-seqs.qzv
+
+#qiime metadata tabulate \
+#  --m-input-file denoising-stats.qza \
+#  --o-visualization denoising-stats.qzv
+
+#qiime phylogeny align-to-tree-mafft-fasttree \
+#  --i-sequences rep-seqs.qza \
+#  --o-alignment aligned-rep-seqs.qza \
+#  --o-masked-alignment masked-aligned-rep-seqs.qza \
+#  --o-tree unrooted-tree.qza \
+#  --o-rooted-tree rooted-tree.qza
+#qiime diversity core-metrics-phylogenetic \
+#  --i-phylogeny rooted-tree.qza \
+#  --i-table table.qza \
+#  --p-sampling-depth 1476 \
+#  --m-metadata-file metadata.tsv \
+#  --output-dir core-metrics-results
+
+qiime feature-classifier classify-sklearn \
+  --i-classifier silva-classifier-v4_v5.qza \
+  --i-reads rep-seqs.qza \
+  --o-classification taxonomy.qza
+
+qiime metadata tabulate \
+  --m-input-file taxonomy.qza \
+  --o-visualization taxonomy.qzv
+
+echo "Finish time"
+date +"%d %B %Y %H:%M:%S"
+#####
+
+
